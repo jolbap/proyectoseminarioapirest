@@ -5,7 +5,6 @@ var Homes = require("../../../database/collections/homes");
 /*----------------CASAS---------------*/
 
 //Registro de casas
-
 router.post("/homes", (req, res) => {
   if (req.body.id == "") {
     res.status(400).json({
@@ -35,6 +34,21 @@ router.post("/homes", (req, res) => {
 router.get("/homes", (req, res, next) => {
   Homes.find({}).exec( (error, docs) => {
     res.status(200).json(docs);
+  })
+});
+
+// muestra casa por id
+router.get(/homes\/[a-z0-9]{1,}$/, (req, res) => {
+  var url = req.url;
+  var id = url.split("/")[2];
+  Homes.findOne({_id : id}).exec( (error, docs) => {
+    if (docs != null) {
+        res.status(200).json(docs);
+        return;
+    }
+    res.status(200).json({
+      "msn" : "No existe el recurso "
+    });
   })
 });
 
