@@ -1,6 +1,5 @@
 const mongoose = require("../connect");
 var homesSchema = {
-  id : String,
   canthabit : String,
   cantbaños : String,
   superficie : String,

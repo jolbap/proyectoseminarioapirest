@@ -6,14 +6,13 @@ var Homes = require("../../../database/collections/homes");
 
 //Registro de casas
 router.post("/homes", (req, res) => {
-  if (req.body.id == "") {
+  if (req.body.precio == "") {
     res.status(400).json({
       "msn" : "formato incorrecto"
     });
     return;
   }
   var homes = {
-    id: req.body.id,
     canthabit : req.body.canthabit,
     cantbaños : req.body.cantbaños,
     superficie : req.body.superficie,
