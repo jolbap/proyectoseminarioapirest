@@ -17,8 +17,11 @@ router.post("/homes", (req, res) => {
     cantbaños : req.body.cantbaños,
     superficie : req.body.superficie,
     precio : req.body.precio,
-    año: req.body.año,
-    descripcion: req.body.descripcion
+    año : req.body.año,
+    descripcion : req.body.descripcion,
+    direccion : req.body.direccion,
+    lat : req.body.lat,
+    lon : req.body.lon
   };
   var homesData = new Homes(homes);
 
@@ -49,6 +52,14 @@ router.get(/homes\/[a-z0-9]{1,}$/, (req, res) => {
       "msn" : "No existe el recurso "
     });
   })
+});
+//elimina
+router.delete(/homes\/[a-z0-9]{1,}$/, (req, res) => {
+  var url = req.url;
+  var id = url.split("/")[2];
+  Homes.find({_id : id}).remove().exec( (err, docs) => {
+      res.status(200).json(docs);
+  });
 });
 
 module.exports = router;
