@@ -8,9 +8,10 @@ var fs = require('fs');
 
 var Homes = require("../../../database/collections/homes");
 var Img = require("../../../database/collections/img");
+var Escuelas = require("../../../database/collections/escuelas");
 
 var storage = multer.diskStorage({
-  destination: "./public/avatars",
+  destination: "./public/casasimg",
   filename: function (req, file, cb) {
     console.log("-------------------------");
     console.log(file);
@@ -77,6 +78,27 @@ router.post(/homeimg\/[a-z0-9]{1,}$/, (req, res) => {
     }
   });
 });
+
+//Muestra casa por id
+router.get(/homeimg\/[a-z0-9]{1,}$/, (req, res) => {
+  var url = req.url;
+  var id = url.split("/")[2];
+  console.log(id)
+  Img.findOne({_id: id}).exec((err, docs) => {
+    if (err) {
+      res.status(500).json({
+        "msn": "Sucedio algun error en el servicio"
+      });
+      return;
+    }
+    //regresamos la imagen deseada
+    var img = fs.readFileSync("./" + docs.physicalpath);
+    //var img = fs.readFileSync("./public/avatars/img.jpg");
+    res.contentType('image/jpeg');
+    res.status(200).send(img);
+  });
+});
+
 /*----------------CASAS---------------*/
 
 //Registro de casas
@@ -130,11 +152,52 @@ router.get(/homes\/[a-z0-9]{1,}$/, (req, res) => {
     });
   })
 });
-//elimina
+//elimina casas
 router.delete(/homes\/[a-z0-9]{1,}$/, (req, res) => {
   var url = req.url;
   var id = url.split("/")[2];
   Homes.find({_id : id}).remove().exec( (err, docs) => {
+      res.status(200).json(docs);
+  });
+});
+
+/*----------------ESCUELAS---------------*/
+
+//Registro de escuelas
+router.post("/escuelas", (req, res) => {
+  if (req.body.escuelanombre == "") {
+    res.status(400).json({
+      "msn" : "formato incorrecto"
+    });
+    return;
+  }
+  var escuelas = {
+    escuelanombre : req.body.escuelanombre,
+    late : req.body.late,
+    lone : req.body.lone
+  };
+  var escuelasData = new Escuelas(escuelas);
+
+  escuelasData.save().then( (rr) => {
+    res.status(200).json({
+      "id" : rr._id,
+      "msn" : "CASA REGISTRADA CON EXITO "
+    });
+  });
+});
+
+// muestra todas las escuelas
+router.get("/escuelas", (req, res, next) => {
+  Escuelas.find({}).exec( (error, docs) => {
+    res.status(200).json(docs);
+  })
+});
+
+//elimina escuelas
+router.delete(/escuelas\/[a-z0-9]{1,}$/, (req, res) => {
+  var url = req.url;
+  var id = url.split("/")[2];
+  Escuelas.find({_id : id}).remove().exec( (err, docs) => {
       res.status(200).json(docs);
   });
 });
