@@ -9,6 +9,7 @@ var fs = require('fs');
 var Homes = require("../../../database/collections/homes");
 var Img = require("../../../database/collections/img");
 var Escuelas = require("../../../database/collections/escuelas");
+var Vecindario = require("../../../database/collections/vecindario");
 
 var storage = multer.diskStorage({
   destination: "./public/casasimg",
@@ -79,7 +80,7 @@ router.post(/homeimg\/[a-z0-9]{1,}$/, (req, res) => {
   });
 });
 
-//Muestra casa por id
+//Muestra img por id
 router.get(/homeimg\/[a-z0-9]{1,}$/, (req, res) => {
   var url = req.url;
   var id = url.split("/")[2];
@@ -110,6 +111,7 @@ router.post("/homes", (req, res) => {
     return;
   }
   var homes = {
+    nombrevecindario : req.body.nombrevecindario,
     canthabit : req.body.canthabit,
     cantbaños : req.body.cantbaños,
     superficie : req.body.superficie,
@@ -152,11 +154,128 @@ router.get(/homes\/[a-z0-9]{1,}$/, (req, res) => {
     });
   })
 });
+
+/*
+// muestra casa por palabra
+router.get(/homes\/[a-z]{3}/, (req, res) => {
+  var url = req.url;
+  var direccion = url.split("/")[2];
+  Homes.find({direccion : direccion}).exec( (error, docs) => {
+    if (docs != null) {
+        res.status(200).json(docs);
+        return;
+    }
+    res.status(200).json({
+      "msn" : "No existe el recurso "
+    });
+  })
+});
+router.post('/homess', function(req, res, next) {
+
+  var wordkey = req.body.direccion;
+  var expreg = new RegExp(wordkey);
+  var result = Homes.filter((key) => {
+    if (key.search(expreg) > -1) {
+      return true
+    }
+    return false;
+  });
+  res.send(
+    {
+      "wordkey" : wordkey,
+      "result" : result
+    });
+});
+*/
+
+// actualiza datos de casas
+router.patch(/homes\/[a-z0-9]{1,}$/, (req, res) => {
+  var url = req.url;
+  var id = url.split("/")[2];
+  var keys = Object.keys(req.body);
+  var homes = {};
+  for (var i = 0; i < keys.length; i++) {
+    homes[keys[i]] = req.body[keys[i]];
+  }
+  console.log(homes);
+  Homes.findOneAndUpdate({_id: id}, homes, (err, params) => {
+      if(err) {
+        res.status(500).json({
+          "msn": "Error no se pudo actualizar los datos"
+        });
+        return;
+      }
+      res.status(200).json(params);
+      return;
+  });
+});
+
 //elimina casas
 router.delete(/homes\/[a-z0-9]{1,}$/, (req, res) => {
   var url = req.url;
   var id = url.split("/")[2];
   Homes.find({_id : id}).remove().exec( (err, docs) => {
+      res.status(200).json(docs);
+  });
+});
+
+/*----------------VECINDARIOS---------------*/
+
+//Registro de vecindario
+router.post("/vecindario", (req, res) => {
+  var vecindario = {
+    nombrevecindario :  req.body.nombrevecindario,
+    zoom  :  req.body.zoom,
+    lat : req.body.lat,
+    lng : req.body.lng,
+    coordenadas : req.body.coordenadas,
+  };
+  var vecindarioData = new Vecindario(vecindario);
+  vecindarioData.save().then( (doc) => {
+    console.log('post req');
+    res.status(200).json({
+      "msn" : "vecindario Registrado con exito ",
+      "doc" : doc._id
+    });
+  }).catch(err => {
+    res.status(500).json({
+      error : err
+    });
+  });
+});
+
+// muestra todos los vecindarios
+router.get("/vecindario", (req, res, next) => {
+  Vecindario.find({}).exec( (error, docs) => {
+    if (error) {
+      res.status(500).json({error : error});
+      return;
+    }
+    res.status(200).json(docs);
+  })
+
+});
+
+// muestra un vecindario por id
+router.get(/vecindario\/[a-z0-9]{1,}$/, (req, res) => {
+  var url = req.url;
+  var id = url.split("/")[2];
+  Vecindario.findOne({_id : id}).exec( (error, docs) => {
+    if (docs != null) {
+        res.status(200).json(docs);
+        return;
+    }
+    res.status(200).json({
+      "msn" : "No existe el ingrediente"
+    });
+  })
+});
+//cad.splt(' ').join('-');
+//elimina vecindarios
+router.delete(/vecindario\/[a-z0-9]{1,}$/, (req, res) => {
+  var url = req.url;
+  var id = url.split("/")[2];
+  Vecindario.find({_id : id}).remove().exec( (err, docs) => {
       res.status(200).json(docs);
   });
 });
